@@ -5,24 +5,32 @@ DECLARE SUB snd.stop ()
 DECLARE SUB delay (seconds!)
 DECLARE SUB delays (seconds!)
 DECLARE SUB delayf (times&)
+
+TYPE countdown
+        high AS STRING * 1
+        low AS STRING * 1
+END TYPE
+
+DIM cntdwn AS countdown
+
 'handling the pc speaker
-'file sound effect
+'file countdown sound effect
 CLS
 INPUT "File Name"; fl1$
 stp% = 10
-freq% = 200
+freq% = 100
 time! = 1 / 70
-time& = 5000
+time& = 0
 OPEN "B", #1, fl1$
 pos1& = 1
 length& = LOF(1)
 snd.start
 DO UNTIL (pos1& >= length&)
-GET #1, pos1&, freq%
-pos1& = pos1& + 4
-freq% = ABS(freq%)
-IF (freq% < 100) THEN freq% = 100
-snd.freq ABS(freq%)
+GET #1, pos1&, cntdwn.high
+pos1& = pos1& + 1
+GET #1, pos1&, cntdwn.low
+pos1& = pos1& + 1
+snd.lohi ASC(cntdwn.low), ASC(cntdwn.high)
 delayf time&
 IF (INKEY$ = CHR$(27)) THEN EXIT DO
 LOOP
