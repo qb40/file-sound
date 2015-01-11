@@ -4,16 +4,20 @@ DECLARE SUB snd.freq (freq%)
 DECLARE SUB snd.stop ()
 DECLARE SUB delay (seconds!)
 DECLARE SUB delays (seconds!)
+DECLARE SUB delayf (times&)
 'handling the pc speaker
+'alarm effect
 stp% = 10
 freq% = 1000
+time! = 1 / 70
+time& = 100000
 snd.start
 DO
-freq2% = 6500 - freq%
-snd.freq freq%
-delays .06
+freq2% = ((6500 - freq%) MOD 500) + 500
+snd.freq ((freq% MOD 500) + 500)
+delayf time&
 snd.freq freq2%
-delays .06
+delayf time&
 freq% = freq% + stp%
 LOOP UNTIL (freq% > 6000)
 snd.stop
@@ -22,6 +26,11 @@ SUB delay (seconds!)
 FOR lv1% = 0 TO INT(70 * seconds!)
 WAIT &H3DA, 8
 WAIT &H3DA, 8, 8
+NEXT
+END SUB
+
+SUB delayf (times&)
+FOR i& = 1 TO times&
 NEXT
 END SUB
 
