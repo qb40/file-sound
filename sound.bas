@@ -1,88 +1,165 @@
+'function declarations
 DECLARE SUB snd.start ()
 DECLARE SUB snd.lohi (low%, high%)
 DECLARE SUB snd.freq (freq%)
 DECLARE SUB snd.stop ()
-DECLARE SUB delay (seconds!)
-DECLARE SUB delays (seconds!)
-DECLARE SUB delayf (times&)
+DECLARE FUNCTION delay$ (seconds!)
+DECLARE FUNCTION delays$ (seconds!)
+DECLARE FUNCTION delayf$ (times&)
+DECLARE SUB progress (left!)
 
-TYPE countdown
-        high AS STRING * 1
-        low AS STRING * 1
+
+'word type
+TYPE Word
+hi AS STRING * 1
+lo AS STRING * 1
 END TYPE
 
-DIM cntdwn AS countdown
+
+
 
 'handling the pc speaker
 'file countdown sound effect
 CLS
-INPUT "File Name"; fl1$
+COLOR 15
+PRINT "File Sound"
+COLOR 7
+PRINT "----------"
+PRINT
+COLOR 12
+PRINT "[w] - increase frequency"
+PRINT "[s] - decrease frequency"
+PRINT
+
+'get file name
+COLOR 14
+INPUT "File name"; fsrc$
+PRINT
+COLOR 12
+
+'default settings
 stp% = 10
 freq% = 100
 time! = 1 / 70
-time& = 0
-OPEN "B", #1, fl1$
-pos1& = 1
+time& = 2000
+
+'prepare
+DIM sndWord AS Word
+OPEN "B", #1, fsrc$
 length& = LOF(1)
+left& = length& - (length& AND 1)
 snd.start
-DO UNTIL (pos1& >= length&)
-GET #1, pos1&, cntdwn.high
-pos1& = pos1& + 1
-GET #1, pos1&, cntdwn.low
-pos1& = pos1& + 1
-snd.lohi ASC(cntdwn.low), ASC(cntdwn.high)
-delayf time&
-IF (INKEY$ = CHR$(27)) THEN EXIT DO
+
+
+DO WHILE left& > 0
+
+'play a sound word
+GET #1, , sndWord
+left& = left& - 2
+snd.lohi ASC(sndWord.lo), ASC(sndWord.hi)
+k$ = LCASE$(delayf$(time&))
+
+
+'modify wait
+SELECT CASE k$
+CASE CHR$(27)
+EXIT DO
+CASE "w"
+time& = time& - 100
+IF time& < 100 THEN time& = 100
+CASE "s"
+time& = time& + 100
+CASE ELSE
+END SELECT
+
+'show progress
+progress left& / length&
 LOOP
+
+'end
+PRINT
+COLOR 7
 snd.stop
 CLOSE #1
 
-SUB delay (seconds!)
+FUNCTION delay$ (seconds!)
+
 FOR lv1% = 0 TO INT(70 * seconds!)
+k$ = INKEY$
+IF k$ <> "" THEN EXIT FOR
 WAIT &H3DA, 8
 WAIT &H3DA, 8, 8
 NEXT
-END SUB
 
-SUB delayf (times&)
+delay$ = k$
+END FUNCTION
+
+FUNCTION delayf$ (times&)
+
 FOR i& = 1 TO times&
+k$ = INKEY$
+IF k$ <> "" THEN EXIT FOR
 NEXT
-END SUB
 
-SUB delays (seconds!)
+delayf$ = k$
+END FUNCTION
+
+FUNCTION delays$ (seconds!)
+
 tm% = INT(seconds! * 19)
 DEF SEG = 0
 POKE 1132, 0
 DO WHILE (PEEK(1132) < tm%)
+k$ = INKEY$
+IF k$ <> "" THEN EXIT DO
 LOOP
 DEF SEG
+
+delays$ = k$
+END FUNCTION
+
+SUB progress (left!)
+
+LOCATE CSRLIN, 1
+prg% = INT((1 - left!) * 100)
+PRINT prg%; "% played";
+
 END SUB
 
 SUB snd.freq (freq%)
-countdown& = 1193180 \ freq%  'calculate countdown
-low& = countdown& MOD 256'send the lowbyte and highbyte of new countdown value
-high& = countdown& \ 256
-OUT &H43, &HB6    'tell timer2 that we are about to load a new countdown value
-OUT &H42, low&
-OUT &H42, high&
+
+'calculate countdown
+cnt& = 1193180 \ freq%
+
+'low & high byte of countdown
+snd.lohi CINT(cnt& MOD 256), CINT(cnt& \ 256)
+
 END SUB
 
 SUB snd.lohi (low%, high%)
-OUT &H43, &HB6    'tell timer2 that we are about to load a new countdown value
+
+'timer2 <- countdown value
+OUT &H43, &HB6
 OUT &H42, low%
 OUT &H42, high%
+
 END SUB
 
 SUB snd.start
-val1% = INP(&H61)       'connect speaker to timer2
+
+'connect speaker to timer2
+val1% = INP(&H61)
 val1% = val1% OR 3
 OUT &H61, val1%
+
 END SUB
 
 SUB snd.stop
+
 'disconnect speaker from timer2
 val1% = INP(&H61)
 val1% = val1% AND 252
 OUT &H61, val1%
+
 END SUB
 
