@@ -6,14 +6,14 @@ DECLARE SUB delay (seconds!)
 DECLARE SUB delays (seconds!)
 DECLARE SUB delayf (times&)
 'handling the pc speaker
-'sharp long laser effect
+'very long motor start to motor stop effect
 stp% = 10
 freq% = 1000
 time! = 1 / 70
-time& = 5000
+time& = 50000
 snd.start
 DO
-freq2% = (6500 - freq%) \ 10
+freq2% = (6500 - freq%) '* 2
 snd.freq freq%
 delayf time&
 snd.freq freq2%
@@ -23,8 +23,6 @@ delayf time&
 freq% = freq% + stp%
 LOOP UNTIL (freq% > 6000)
 snd.stop
-
-
 
 SUB delay (seconds!)
 FOR lv1% = 0 TO INT(70 * seconds!)
