@@ -6,17 +6,19 @@ DECLARE SUB delay (seconds!)
 DECLARE SUB delays (seconds!)
 DECLARE SUB delayf (times&)
 'handling the pc speaker
-'alarm effect
+'phaser effect
 stp% = 10
 freq% = 1000
 time! = 1 / 70
-time& = 100000
+time& = 10000
 snd.start
 DO
-freq2% = ((6500 - freq%) MOD 500) + 500
-snd.freq ((freq% MOD 500) + 500)
+freq2% = (6500 - freq%)
+snd.freq freq%
 delayf time&
 snd.freq freq2%
+delayf time&
+snd.freq freq%
 delayf time&
 freq% = freq% + stp%
 LOOP UNTIL (freq% > 6000)
