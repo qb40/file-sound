@@ -10,62 +10,49 @@ DIM snd AS SoundBlaster
 
 CLS
 COLOR 10
-PRINT "[Detecting a SOUND CARD] . . ."
+PRINT "[Playing a simple sound using SOUND CARD] . . ."
 COLOR 11
-PRINT "Detecting for AdLib compatible board . . ."
+PRINT "Playing from AdLib compatible board . . ."
 COLOR 8
 PRINT ""
 
-snd.address = &H388
-snd.datas = &H389
+snd.address = &H338
+snd.datas = &H339
+voice% = &H11
 
-PRINT "Checking process started."
+PRINT "Initiating process."
 PRINT ""
 
-'reset both timers
-OUT snd.address, &H4
-OUT snd.datas, &H60
-
-'enable the interrupts
-OUT snd.address, &H4
-OUT snd.datas, &H80
-
-'read the status register
-result1% = INP(snd.address)
-
-'write FFh to register 2(Timer 1)
-OUT snd.address, &H2
-OUT snd.datas, &HFF
-
-'start timer1
-OUT snd.address, &H4
-OUT snd.datas, &H21
-
-
-'delay for at least 80 microseconds
-FOR delay% = 1 TO 20
-dummy% = INP(snd.address)
+'clearing all registers
+FOR i% = 1 TO 244      '244 total registers of sound card
+OUT snd.address, i%
+OUT snd.datas, &H0
 NEXT
 
-'read the status register
-result2% = INP(snd.address)
+'setting normal values
+OUT snd.address, &H20   'set modulator's multiple to 1
+OUT snd.datas, &H1
+OUT snd.address, &H40   'set modulator's level to about 40dB
+OUT snd.datas, &H10
+OUT snd.address, &H60   'modulator attack: quick; decay: long
+OUT snd.datas, &HF0
+OUT snd.address, &H80   'modulator sustain: medium; release: medium
+OUT snd.datas, &H77
+OUT snd.address, &HA0   'set voice frequency's LSB (D#)
+OUT snd.datas, &H98
+OUT snd.address, &H23   'set carrier's multiple to 1
+OUT snd.datas, &H1
+OUT snd.address, &H43   'set carrier to maximum volume(about 47 dB)
+OUT snd.datas, &H0
+OUT snd.address, &H63   'carrier attack: quick; decay: long
+OUT snd.datas, &HF0
+OUT snd.address, &H83   'carrier sustain: medium; release: medium
+OUT snd.datas, &H77
 
-'reset both timers and interrupts
-OUT snd.address, &H4
-OUT snd.datas, &H60
-OUT snd.address, &H4
-OUT snd.datas, &H80
+OUT snd.address, &HB0   'set on\off
+OUT snd.datas, voice%
 
-'test the stored results
-result1% = result1% AND &HE0
-result2% = result2% AND &HE0
-IF (result1% = &H0 AND result2% = &HC0) THEN
-COLOR 14
-PRINT "Sound Card detected."
-PRINT "The Sound card is an AdLib compatible board."
-ELSE
-COLOR 14
-PRINT "Sound Card not detected."
-PRINT "The Sound card is not an AdLib compatible board."
-END IF
+'set timer control
+OUT snd.address, &H4
+OUT snd.datas, &H3
 
