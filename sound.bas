@@ -6,32 +6,28 @@ DECLARE SUB delay (seconds!)
 DECLARE SUB delays (seconds!)
 DECLARE SUB delayf (times&)
 'handling the pc speaker
-'whirring sound effect
+'file sound effect
+CLS
+INPUT "File Name"; fl1$
 stp% = 10
-freq% = 2000
+freq% = 200
 time! = 1 / 70
-time& = 50000
+time& = 5000
+OPEN "B", #1, fl1$
+pos1& = 1
+length& = LOF(1)
 snd.start
-DO
-freq2% = freq% * 3
-freq3% = freq% \ 3
-freq4% = (freq2% + freq3%) \ 2
-freq5% = (freq4% + freq%) \ 2
-snd.freq freq%
+DO UNTIL (pos1& >= length&)
+GET #1, pos1&, freq%
+pos1& = pos1& + 4
+freq% = ABS(freq%)
+IF (freq% < 100) THEN freq% = 100
+snd.freq ABS(freq%)
 delayf time&
-snd.freq freq2%
-delayf time&
-snd.freq freq3%
-delayf time&
-snd.freq freq4%
-delayf time&
-snd.freq freq5%
-delayf time&
-freq% = freq% + stp%
-LOOP UNTIL (freq% > 3000)
+IF (INKEY$ = CHR$(27)) THEN EXIT DO
+LOOP
 snd.stop
-
-
+CLOSE #1
 
 SUB delay (seconds!)
 FOR lv1% = 0 TO INT(70 * seconds!)
